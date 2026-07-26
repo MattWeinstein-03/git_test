@@ -12,27 +12,68 @@ not have five years of experience, an instinct for large system design, or a men
 index of the standard library. You will have the foundation those things are built
 on, plus three finished projects you wrote yourself.
 
-## Start here (60 seconds)
+## Start here
 
-Run these from the course root (the folder containing `check.py`).
+Pick whichever of these suits you. All three end up in the same place.
+
+### Option 1: one click, nothing installed (GitHub Codespaces)
+
+On the repository page, click **Code -> Codespaces -> Create codespace on main**.
+You get a browser editor with Python 3.12 and pytest already installed, opened
+directly in this folder, and it runs a setup check for you as it starts. Nothing
+to install, nothing to configure. Then:
 
 ```bash
-python3 --version          # need 3.10 or newer; if this fails, read SETUP.md
-python3 -m pip install pytest
-python check.py doctor     # confirms Python, pytest, and the 21 day folders
+./run
 ```
 
-If `python` is not a recognised command on your machine, use `python3` (macOS,
-Linux) or `py` (Windows) everywhere in this README. [SETUP.md](SETUP.md) explains
-that mess in detail.
+### Option 2: one command, on your own machine
 
-Then open the first lesson and start reading:
+From this folder:
+
+```bash
+./run doctor      # macOS / Linux / WSL / Git Bash
+run doctor        # Windows (PowerShell or cmd)
+```
+
+`run` works out which Python to use, installs pytest the first time if it is
+missing, and then hands over to the grader. You do not have to know whether your
+Python is called `python`, `python3` or `py`, or which version is first on your
+PATH — this is the single most common thing that stops beginners before they
+start, so the launcher just absorbs it.
+
+If it cannot find a Python 3.10+, it tells you so and points at
+[SETUP.md](SETUP.md). To force a specific interpreter:
+
+```bash
+PZH_PYTHON=/usr/local/bin/python3.12 ./run doctor     # macOS / Linux
+set PZH_PYTHON=C:\Python312\python.exe && run doctor  # Windows
+```
+
+### Option 3: one keystroke, in VS Code
+
+Open this folder in VS Code and press **Ctrl+Shift+B** (**Cmd+Shift+B** on
+macOS). That grades whichever day you are on. Other tasks — grade a specific
+day, show progress, check setup — are under **Terminal -> Run Task**.
+
+### Then start reading
 
 ```
 course/week1/day01_getting_started/LESSON.md
 ```
 
 [Day 1 lesson](course/week1/day01_getting_started/LESSON.md)
+
+### If you would rather not use the launcher
+
+Nothing is hidden. `./run day05` is just `python check.py day05` with the
+interpreter figured out first, and `check.py` is a wrapper around pytest. Every
+command in this README works as `python check.py ...` too:
+
+```bash
+python3 -m pip install pytest
+python3 check.py doctor
+```
 
 ## How the course works
 
@@ -93,6 +134,9 @@ later, is in [SYLLABUS.md](SYLLABUS.md).
 
 Run all of these from the course root. The single positional argument is the
 target; `-v` and `--fresh` are the only flags.
+
+Anywhere you see `python check.py` below, `./run` works identically
+(`run` on Windows) — for example `./run day05 -v`.
 
 | Command | What it does |
 |---|---|

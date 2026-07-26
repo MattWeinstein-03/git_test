@@ -52,7 +52,11 @@ pip-wheel-metadata/
 *.local.toml
 
 # Editors and tooling
-.vscode/
+# Ignore the CONTENTS of .vscode/ (not the directory itself, or the negation
+# below could not take effect), then keep the one shared file: the editor tasks
+# are part of the course, while settings.json etc. are personal.
+.vscode/*
+!.vscode/tasks.json
 .idea/
 *.swp
 *.swo

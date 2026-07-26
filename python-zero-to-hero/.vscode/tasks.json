@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // The one-keystroke task: Ctrl+Shift+B (Cmd+Shift+B on macOS).
+      // Grades the first day you have not finished yet.
+      "label": "Grade my current day",
+      "type": "shell",
+      "command": "./run next",
+      "windows": { "command": ".\\run.cmd next" },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      // Prompts for a day number, so you can re-grade any day on demand.
+      "label": "Grade a specific day",
+      "type": "shell",
+      "command": "./run day${input:dayNumber}",
+      "windows": { "command": ".\\run.cmd day${input:dayNumber}" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Grade a specific day (full detail)",
+      "type": "shell",
+      "command": "./run day${input:dayNumber} -v",
+      "windows": { "command": ".\\run.cmd day${input:dayNumber} -v" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Show my progress",
+      "type": "shell",
+      "command": "./run",
+      "windows": { "command": ".\\run.cmd" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Check my setup",
+      "type": "shell",
+      "command": "./run doctor",
+      "windows": { "command": ".\\run.cmd doctor" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "dayNumber",
+      "type": "promptString",
+      "description": "Which day? (01-21)",
+      "default": "01"
+    }
+  ]
+}

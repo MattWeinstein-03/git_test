@@ -1,0 +1,29 @@
+{
+  "name": "python-zero-to-hero",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+
+  // Open straight into the course folder, so ./run and check.py are right there.
+  "workspaceFolder": "/workspaces/git_test/python-zero-to-hero",
+
+  // Everything the course needs, installed once when the container is built,
+  // then a setup check so you can see it is genuinely working before you start.
+  "postCreateCommand": "python -m pip install --upgrade pip >/dev/null && python -m pip install pytest && chmod +x run && python check.py doctor",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["course"],
+        // Python cares about indentation, so do not let a tab sneak in.
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.renderWhitespace": "boundary",
+        "files.trimTrailingWhitespace": true
+      }
+    }
+  }
+}

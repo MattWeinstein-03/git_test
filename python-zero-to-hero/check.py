@@ -30,6 +30,10 @@ ROOT = Path(__file__).parent.resolve()
 COURSE = ROOT / "course"
 CACHE = ROOT / ".pzh_progress.json"
 
+# How to spell "run me again" in the hints. The ./run launcher sets this, so the
+# advice you are given matches the way you actually started the grader.
+CMD = os.environ.get("PZH_LAUNCHER") or "python check.py"
+
 # ----------------------------------------------------------------------------
 # tiny terminal styling (degrades gracefully when piped or on dumb terminals)
 # ----------------------------------------------------------------------------
@@ -257,7 +261,7 @@ def report_day(day: Day, res: Result, verbose: bool) -> None:
     else:
         print(
             dim(
-                f"\n  See the detail:  python check.py day{day.number:02d} -v"
+                f"\n  See the detail:  {CMD} day{day.number:02d} -v"
                 f"\n  Read the lesson: {day.lesson.relative_to(ROOT)}"
             )
         )
@@ -273,6 +277,10 @@ def load_cache() -> dict:
 
 
 def save_cache(data: dict) -> None:
+    # Grading solutions.py must never touch YOUR progress: otherwise one
+    # verification run makes a day you have not started look finished.
+    if os.environ.get("PZH_SOLUTIONS") == "1":
+        return
     try:
         CACHE.write_text(json.dumps(data, indent=2, sort_keys=True))
     except OSError:
@@ -312,7 +320,7 @@ def cmd_progress(days: list[Day], fresh: bool) -> int:
     print(f"  Overall: {_bar(overall, 30)} {overall}%  ({total_pass}/{total_all} checks)")
     nxt = next((d for d in days if cache.get(d.key, {}).get("passed", 0) < cache.get(d.key, {}).get("graded", 1)), None)
     if nxt:
-        print(f"  Up next: {blue(f'python check.py day{nxt.number:02d}')}  ->  {nxt.lesson.relative_to(ROOT)}")
+        print(f"  Up next: {blue(f'{CMD} day{nxt.number:02d}')}  ->  {nxt.lesson.relative_to(ROOT)}")
     else:
         print(green("  Every day is complete. You did the thing."))
     print(dim("\n  (cached; use --fresh to re-grade everything)\n"))
@@ -407,7 +415,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not targets:
         print(red(f"Don't know what '{args.target}' means."))
-        print(dim("Try: python check.py day03   |   week2   |   next   |   plan"))
+        print(dim(f"Try: {CMD} day03   |   week2   |   next   |   plan"))
         return 1
 
     cache = load_cache()
