@@ -1,0 +1,5 @@
+# Everything the portable notebooks need.
+# The course itself only needs pytest; the rest is the Jupyter runtime.
+pytest>=8.0
+jupyterlab>=4.0
+ipykernel>=6.0

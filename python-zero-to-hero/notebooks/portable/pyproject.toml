@@ -1,0 +1,46 @@
+[project]
+name = "python-zero-to-hero"
+version = "1.0.0"
+description = "A 3-week, drill-based Python course with automated grading."
+requires-python = ">=3.10"
+dependencies = ["pytest>=8.0"]
+
+[project.optional-dependencies]
+# Only needed from Day 19 onward.
+web = ["requests>=2.31", "httpx>=0.27"]
+# Only needed for Day 18's tooling lesson and Day 21 stretch goals.
+tools = ["ruff>=0.5", "black>=24.0", "mypy>=1.10", "rich>=13.0"]
+
+[tool.pytest.ini_options]
+# Short, readable failure output — beginners drown in long tracebacks.
+# --import-mode=importlib lets every day folder hold a file named
+# test_exercises.py: without it, collecting a whole week at once fails with
+# "import file mismatch" because the basenames collide.
+# `-q` is NOT set here on purpose: check.py passes its own -q, and two of them
+# make pytest quiet enough to drop the "N passed" summary line that check.py
+# parses — which made every day report "No tests ran".
+addopts = "--tb=short --no-header -p no:cacheprovider --import-mode=importlib"
+testpaths = ["course", "projects"]
+python_files = ["test_*.py"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+# Exercise stubs intentionally raise NotImplementedError and keep unused args.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"course/**/exercises.py" = ["ARG001", "B006"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+# Deliberately lenient: this is a teaching repo, not production.
+check_untyped_defs = true
