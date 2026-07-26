@@ -1,0 +1,141 @@
+name: verify course
+
+# Protects the two properties that make the grader trustworthy:
+#   1. every graded check passes against solutions.py  -> the work is doable
+#   2. every graded check fails against exercises.py   -> nothing passes by accident
+# If (2) ever breaks, an exercise is being graded by a test that a blank stub can
+# satisfy, which is worse than having no test at all.
+
+on:
+  push:
+    branches: [main]
+    paths: ["python-zero-to-hero/**", ".github/workflows/verify-course.yml"]
+  pull_request:
+    paths: ["python-zero-to-hero/**", ".github/workflows/verify-course.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: python-zero-to-hero
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.10 is the floor the course claims to support, so prove it.
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Setup check reports a healthy course
+        run: python check.py doctor
+
+      - name: Reference solutions must all pass
+        env:
+          PZH_SOLUTIONS: "1"
+        run: python -m pytest course -q
+
+      - name: Untouched stubs must all fail
+        run: |
+          # Invert the exit code: a green run here means some exercise can be
+          # "solved" by the NotImplementedError stub it ships with.
+          if python -m pytest course -q > /tmp/stub-run.txt 2>&1; then
+            echo "::error::Graded checks passed against untouched exercise stubs."
+            echo "At least one test does not actually verify the learner's work."
+            tail -40 /tmp/stub-run.txt
+            exit 1
+          fi
+          echo "Confirmed: the stub run fails, as it must."
+          tail -1 /tmp/stub-run.txt
+
+      - name: Every demo script runs clean and leaves no mess
+        run: |
+          before="$(find . -type f -not -path '*/__pycache__/*' | sort)"
+          status=0
+          for demo in course/week*/day*/examples.py; do
+            if ! output="$(python "$demo" 2>&1)"; then
+              echo "::error file=python-zero-to-hero/$demo::demo script failed"
+              echo "$output" | tail -20
+              status=1
+            fi
+          done
+          find . -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null || true
+          rm -rf .pytest_cache .pzh_progress.json
+          after="$(find . -type f -not -path '*/__pycache__/*' | sort)"
+          if [ "$before" != "$after" ]; then
+            echo "::error::A demo script left files behind or removed some."
+            diff <(echo "$before") <(echo "$after") || true
+            status=1
+          fi
+          exit $status
+
+      - name: Course structure is intact
+        run: |
+          status=0
+          days="$(ls -d course/week*/day* | wc -l)"
+          if [ "$days" -ne 21 ]; then
+            echo "::error::expected 21 day folders, found $days"
+            status=1
+          fi
+          for dir in course/week*/day*; do
+            for required in LESSON.md examples.py exercises.py solutions.py test_exercises.py; do
+              if [ ! -f "$dir/$required" ]; then
+                echo "::error::$dir is missing $required"
+                status=1
+              fi
+            done
+          done
+          exit $status
+
+  launcher:
+    # The one-click entry point is what a beginner touches first, so it gets
+    # tested on all three platforms rather than assumed to work.
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: ./run bootstraps itself and reports a healthy setup
+        if: runner.os != 'Windows'
+        run: |
+          test -x run || { echo "::error::run is not executable in git"; exit 1; }
+          ./run doctor
+          ./run plan > /dev/null
+          # An unfinished day must report failure, or progress would be a lie.
+          if ./run day01 > /dev/null 2>&1; then
+            echo "::error::./run day01 succeeded against untouched stubs"
+            exit 1
+          fi
+
+      - name: run.cmd bootstraps itself and reports a healthy setup
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call run.cmd doctor || exit /b 1
+          call run.cmd plan > nul || exit /b 1
+          call run.cmd day01 > nul 2>&1
+          if not errorlevel 1 (
+            echo ::error::run.cmd day01 succeeded against untouched stubs
+            exit /b 1
+          )
