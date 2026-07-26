@@ -1,0 +1,67 @@
+# Course grader state
+.pzh_progress.json
+
+# Scratch space that examples.py and exercises may create
+tmp/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Test / lint / type-check caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# Databases created on Days 19-21
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env/
+env.bak/
+venv.bak/
+.python-version
+pyvenv.cfg
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Secrets and local config
+.env
+.env.local
+*.local.toml
+
+# Editors and tooling
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.ipynb_checkpoints/
+
+# OS noise
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+Desktop.ini
