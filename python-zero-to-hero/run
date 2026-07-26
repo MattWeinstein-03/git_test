@@ -8,6 +8,8 @@
 #   ./run next         grade the first day you haven't finished
 #   ./run doctor       check your setup
 #   ./run plan         print the syllabus
+#   ./run notebook     read the lessons as runnable notebooks in JupyterLab
+#   ./run notebook day05   open Day 5's notebook straight away
 #
 # You do not have to care which Python is on your PATH, whether it is called
 # `python` or `python3`, or whether pytest is installed. This script works all
@@ -112,6 +114,98 @@ EOF
             exit 1
         }
     fi
+fi
+
+# `./run notebook` is the only argument that does not go to the grader: it is a
+# different front end onto the same course. Nothing in a notebook is graded, so
+# JupyterLab and friends stay optional and are installed on first use.
+if [ "${1:-}" = "notebook" ]; then
+    shift
+
+    if ! "$PY" -c 'import jupyterlab' >/dev/null 2>&1; then
+        echo "  JupyterLab is missing - installing the notebook extras once with $PY ..."
+        if ! "$PY" -m pip install --quiet -r requirements-notebooks.txt >/dev/null 2>&1; then
+            # Same story as pytest above: system Pythons often refuse a plain install.
+            "$PY" -m pip install --quiet --user -r requirements-notebooks.txt >/dev/null 2>&1 || {
+                cat >&2 <<EOF
+
+  Could not install the notebook extras automatically.
+
+  Try one of these, then re-run:
+    $PY -m pip install --user -r requirements-notebooks.txt
+    $PY -m venv .venv && . .venv/bin/activate && pip install -r requirements-notebooks.txt
+
+  You do not need any of this to take the course - the graded work is
+  exercises.py plus ./run dayNN, which only needs pytest.
+
+EOF
+                exit 1
+            }
+        fi
+    fi
+
+    # Flags a container needs: listen on all interfaces so a forwarded port
+    # works, do not try to open a browser that isn't there, and root the file
+    # browser at the course folder rather than wherever you happened to be.
+    JUPYTER_FLAGS=(--ip=0.0.0.0 --port=8888 --no-browser "--ServerApp.root_dir=$HERE")
+
+    # Codespaces runs you as a normal user, but plenty of plain Docker images put
+    # you at root, and Jupyter refuses to start there without being told.
+    if [ "$(id -u 2>/dev/null)" = "0" ]; then
+        JUPYTER_FLAGS+=(--allow-root)
+    fi
+
+    # An optional day, spelled however check.py accepts it: day05, 05, 5.
+    if [ $# -gt 0 ]; then
+        want="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+        want="${want#day}"
+        case "$want" in
+            ''|*[!0-9]*)
+                cat >&2 <<EOF
+
+  Don't know which notebook '$1' means.
+
+  Try:  ./run notebook day05   |   ./run notebook   (opens the file browser)
+
+EOF
+                exit 1
+                ;;
+        esac
+        num="$(printf '%02d' "$((10#$want))")"
+
+        # The build script names them notebooks/dayNN_slug.ipynb, and we do not
+        # want to hardcode 21 slugs, so glob for the day number.
+        nb=""
+        for candidate in notebooks/day"$num"_*.ipynb; do
+            [ -f "$candidate" ] && nb="$candidate" && break
+        done
+
+        if [ -z "$nb" ]; then
+            cat >&2 <<EOF
+
+  No notebook for day $num yet (looked for notebooks/day${num}_*.ipynb).
+
+  The notebooks are generated from each day's LESSON.md. Build them with:
+
+    $PY tools/build_notebooks.py
+
+  Then re-run:  ./run notebook day$num
+
+  Or read the lesson as plain text - it is the same content:
+    course/week*/day${num}_*/LESSON.md
+
+EOF
+            exit 1
+        fi
+
+        # The positional path opens the notebook when there is a browser to open
+        # it in; default_url is what makes it work in a container, where you
+        # arrive at "/" from a forwarded port and want to land in the lesson.
+        exec "$PY" -m jupyterlab "${JUPYTER_FLAGS[@]}" \
+            "--LabApp.default_url=/lab/tree/$nb" "$nb"
+    fi
+
+    exec "$PY" -m jupyterlab "${JUPYTER_FLAGS[@]}"
 fi
 
 # Tell check.py how you invoked it, so its hints say "./run day05" rather than

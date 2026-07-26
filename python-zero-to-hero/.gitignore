@@ -61,7 +61,12 @@ pip-wheel-metadata/
 *.swp
 *.swo
 *~
+
+# Notebook workflow (see requirements-notebooks.txt / ./run notebook).
+# The notebooks themselves are generated from LESSON.md by
+# tools/build_notebooks.py; these two are per-machine scratch state.
 .ipynb_checkpoints/
+.jupyter/
 
 # OS noise
 .DS_Store

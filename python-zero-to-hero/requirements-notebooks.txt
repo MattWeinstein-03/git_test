@@ -1,0 +1,18 @@
+# Optional extras for the interactive notebook workflow only.
+#
+# You do NOT need these to take the course. The graded work is exercises.py
+# checked by pytest, and `./run` installs pytest for you. Install this file if
+# you want the lessons as runnable notebooks:
+#
+#   ./run notebook                      (does this for you on first use)
+#   python -m pip install -r requirements-notebooks.txt
+#
+# jupyterlab  - the notebook front end itself
+# ipykernel   - the Python kernel the notebooks run their cells in
+# nbformat    - reading/writing .ipynb files (used by tools/build_notebooks.py)
+# nbclient    - executing a notebook programmatically (same builder)
+
+jupyterlab>=4.0
+ipykernel>=6.25
+nbformat>=5.9
+nbclient>=0.9

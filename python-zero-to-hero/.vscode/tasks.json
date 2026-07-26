@@ -44,6 +44,34 @@
       "windows": { "command": ".\\run.cmd doctor" },
       "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
       "problemMatcher": []
+    },
+    {
+      // Prompts for the day you are on, then opens that day's notebook - the
+      // lesson with runnable code cells. Nothing in a notebook is graded; your
+      // answers still go in exercises.py.
+      //
+      // In VS Code or a Codespace you do not need this task at all: just open
+      // notebooks/dayNN_*.ipynb and run the cells in the editor. This is for
+      // when you would rather work in JupyterLab.
+      "label": "Open today's notebook in JupyterLab",
+      "type": "shell",
+      "command": "./run notebook day${input:dayNumber}",
+      "windows": { "command": ".\\run.cmd notebook day${input:dayNumber}" },
+      // A server, not a command: it keeps running until you stop it.
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      // JupyterLab at the course root, so you can browse to any notebook.
+      // Ctrl+C in the task terminal stops it.
+      "label": "Start JupyterLab",
+      "type": "shell",
+      "command": "./run notebook",
+      "windows": { "command": ".\\run.cmd notebook" },
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
     }
   ],
   "inputs": [

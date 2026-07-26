@@ -7,12 +7,28 @@
 
   // Everything the course needs, installed once when the container is built,
   // then a setup check so you can see it is genuinely working before you start.
-  "postCreateCommand": "python -m pip install --upgrade pip >/dev/null && python -m pip install pytest && chmod +x run && python check.py doctor",
+  // pytest is the hard dependency (the graded course); requirements-notebooks.txt
+  // is the optional interactive layer, installed here so a Codespace can open
+  // notebooks/day01_getting_started.ipynb with zero further setup.
+  "postCreateCommand": "python -m pip install --upgrade pip >/dev/null && python -m pip install pytest && python -m pip install -r requirements-notebooks.txt && chmod +x run && python check.py doctor",
+
+  // JupyterLab, if you start it with `./run notebook`, listens here.
+  "forwardPorts": [8888],
+  "portsAttributes": {
+    "8888": {
+      "label": "JupyterLab",
+      // Notify, do not open: the notebooks work fine in the editor itself, so
+      // do not yank focus away from whatever you are reading.
+      "onAutoForward": "notify"
+    }
+  },
 
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-python.python"
+        "ms-python.python",
+        // Runnable .ipynb cells inside the editor, no server to think about.
+        "ms-toolsai.jupyter"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
@@ -22,7 +38,12 @@
         "editor.insertSpaces": true,
         "editor.tabSize": 4,
         "editor.renderWhitespace": "boundary",
-        "files.trimTrailingWhitespace": true
+        "files.trimTrailingWhitespace": true,
+        // Lesson cells print a lot on purpose; do not truncate the output you
+        // are meant to be reading, and keep the notebook chrome quiet.
+        "notebook.output.textLineLimit": 200,
+        "notebook.output.scrolling": true,
+        "notebook.lineNumbers": "on"
       }
     }
   }
