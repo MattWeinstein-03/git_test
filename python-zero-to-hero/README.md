@@ -14,10 +14,28 @@ on, plus three finished projects you wrote yourself.
 
 ## Start here
 
-Five ways in. They are the same course — pick the one that matches the machine
-in front of you.
+Six ways in. They are the same course — pick the one that matches the machine in
+front of you.
 
-### Option 1 (recommended): one click, nothing installed (GitHub Codespaces)
+### Option 1 (fastest): click one link, no account, nothing installed (Binder)
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MattWeinstein-03/git_test/main?labpath=python-zero-to-hero%2Fnotebooks%2Fday01_getting_started.ipynb)
+
+That badge opens Day 1's notebook in a temporary JupyterLab in your browser. No
+GitHub account, no sign-in, no install. The first launch after a change to the
+repo takes a few minutes while Binder builds the image; after that it is quick.
+
+Read the two limits before you rely on it:
+
+- **It is temporary.** The session is thrown away after roughly 10 minutes of
+  inactivity, and **anything you typed goes with it.** Fine for reading a lesson
+  and running its cells. Not fine for working through `exercises.py` unless you
+  download your files before you leave (right-click a file -> Download).
+- It is a free shared service, so capacity varies.
+
+For anything you want to keep, use Option 2.
+
+### Option 2 (recommended): one click, nothing installed, and your work persists (GitHub Codespaces)
 
 On the repository page, click **Code -> Codespaces -> Create codespace on main**.
 You get a browser editor with Python 3.12, pytest and JupyterLab already
@@ -41,7 +59,7 @@ When you are ready to be graded, use the terminal in the same window:
 ./run
 ```
 
-### Option 2: the same notebooks in JupyterLab
+### Option 3: the same notebooks in JupyterLab
 
 If you prefer JupyterLab to VS Code, from this folder:
 
@@ -54,7 +72,7 @@ The first run installs [requirements-notebooks.txt](requirements-notebooks.txt)
 (JupyterLab and friends) for you. In a Codespace, VS Code offers to open the
 forwarded port 8888 for you; locally, click the URL the command prints.
 
-### Option 3: take one folder with you (laptop or iPad, offline)
+### Option 4: take one folder with you (laptop or iPad, offline)
 
 `notebooks/portable/` is the whole course as one self-contained folder: the 21
 notebooks, the exercises, the solutions, the reference material and the grader.
@@ -85,7 +103,7 @@ bundle are copies, so your answers live in that folder and nowhere else; and
 rebuilding the bundle overwrites them with fresh stubs. Work in one place, not
 both.
 
-### Option 4: one command, on your own machine
+### Option 5: one command, on your own machine
 
 From this folder:
 
@@ -108,7 +126,7 @@ PZH_PYTHON=/usr/local/bin/python3.12 ./run doctor     # macOS / Linux
 set PZH_PYTHON=C:\Python312\python.exe && run doctor  # Windows
 ```
 
-### Option 5: one keystroke, in VS Code
+### Option 6: one keystroke, in VS Code
 
 Open this folder in VS Code and press **Ctrl+Shift+B** (**Cmd+Shift+B** on
 macOS). That grades whichever day you are on. Other tasks — grade a specific

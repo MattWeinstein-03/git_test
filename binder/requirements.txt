@@ -1,0 +1,10 @@
+# Dependencies for the click-to-run Binder environment.
+#
+# Binder's base image already provides JupyterLab and a Python kernel, so the
+# only thing the course actually needs on top is pytest, which is what the
+# grader (check.py / ./run) uses.
+#
+# This file exists for mybinder.org. If you are working locally, use
+# python-zero-to-hero/requirements-notebooks.txt instead.
+
+pytest>=8.0

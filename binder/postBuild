@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Runs once while Binder builds the image for this repo.
+#
+# Deliberately forgiving. This script failing means the Binder build fails, and a
+# learner who clicked a link gets nothing at all rather than a working notebook
+# with a warning in the log. So: fix what can be fixed, report the rest, and only
+# refuse to build if the course itself is genuinely not there.
+set -uo pipefail
+
+cd python-zero-to-hero
+
+# The launcher is committed executable, but a Binder image is built from an
+# archive, so be explicit rather than trusting the mode bit to survive.
+chmod +x run 2>/dev/null || true
+
+# pytest is the one hard dependency of the grader. binder/requirements.txt should
+# already have installed it; this is the belt to that braces.
+if ! python -c 'import pytest' >/dev/null 2>&1; then
+    echo "postBuild: pytest missing, installing it"
+    python -m pip install --quiet pytest || echo "postBuild: pytest install failed"
+fi
+
+# Print the setup check for the build log, but do not let a warning (for example
+# "no virtualenv active", which is normal and expected on Binder) fail the build.
+python check.py doctor || echo "postBuild: doctor reported problems - see above"
+
+# The one genuinely fatal condition: the course content is not present, so the
+# image would be useless. Better to fail here than to hand someone an empty shell.
+days="$(find course -mindepth 2 -maxdepth 2 -type d -name 'day*' | wc -l)"
+if [ "$days" -ne 21 ]; then
+    echo "postBuild: FATAL - expected 21 day folders, found $days"
+    exit 1
+fi
+
+echo "postBuild: course is intact ($days days). Open notebooks/day01_getting_started.ipynb"
