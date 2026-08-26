@@ -1,0 +1,4 @@
+node_modules/
+products.db
+*.db-wal
+*.db-shm

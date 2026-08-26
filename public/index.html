@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPC Product Database</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- QuaggaJS for barcode scanning from camera -->
+  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>📦 UPC Product Database</h1>
+      <nav class="nav-tabs">
+        <button class="tab active" data-tab="scanner">📷 Scanner</button>
+        <button class="tab" data-tab="database">📋 Database</button>
+        <button class="tab" data-tab="bulk">📑 Bulk Import</button>
+        <button class="tab" data-tab="stats">📊 Stats</button>
+      </nav>
+    </header>
+
+    <!-- Scanner Tab -->
+    <section id="tab-scanner" class="tab-content active">
+      <div class="scanner-section">
+        <div class="manual-entry">
+          <h2>Enter or Scan UPC Code</h2>
+          <div class="input-group">
+            <input type="text" id="upc-input" placeholder="Enter UPC code (e.g., 049000042566)" 
+                   pattern="[0-9]*" inputmode="numeric" autocomplete="off">
+            <button id="lookup-btn" class="btn btn-primary">🔍 Lookup</button>
+          </div>
+        </div>
+
+        <div class="camera-section">
+          <button id="start-camera-btn" class="btn btn-secondary">📷 Start Camera Scanner</button>
+          <button id="stop-camera-btn" class="btn btn-danger" style="display:none">⏹ Stop Camera</button>
+          <div id="camera-container" style="display:none">
+            <div id="interactive" class="viewport"></div>
+            <p class="camera-hint">Point your camera at a barcode</p>
+          </div>
+        </div>
+
+        <!-- Result Display -->
+        <div id="scan-result" class="result-card" style="display:none">
+          <div class="result-header">
+            <h3 id="result-title">Product Name</h3>
+            <span id="result-source" class="badge"></span>
+          </div>
+          <div class="result-body">
+            <div id="result-images" class="result-images"></div>
+            <div class="result-details">
+              <table class="detail-table">
+                <tr><td class="label">UPC:</td><td id="result-upc"></td></tr>
+                <tr><td class="label">Brand:</td><td id="result-brand"></td></tr>
+                <tr><td class="label">Category:</td><td id="result-category"></td></tr>
+                <tr><td class="label">Description:</td><td id="result-description"></td></tr>
+                <tr><td class="label">Weight:</td><td id="result-weight"></td></tr>
+                <tr id="result-ingredients-row"><td class="label">Ingredients:</td><td id="result-ingredients"></td></tr>
+              </table>
+              <div id="result-nutrition" class="nutrition-panel" style="display:none">
+                <h4>Nutrition Facts (per 100g)</h4>
+                <div id="nutrition-content"></div>
+              </div>
+            </div>
+          </div>
+          <div class="result-footer">
+            <span id="result-cache-status"></span>
+          </div>
+        </div>
+
+        <!-- Not Found State -->
+        <div id="not-found" class="not-found-card" style="display:none">
+          <h3>🔍 Product Not Found</h3>
+          <p>UPC: <span id="nf-upc"></span></p>
+          <p>This product isn't in any database yet. You can add it manually:</p>
+          <form id="manual-add-form" class="manual-form">
+            <input type="hidden" id="manual-upc">
+            <input type="text" id="manual-title" placeholder="Product Name *" required>
+            <input type="text" id="manual-brand" placeholder="Brand">
+            <input type="text" id="manual-category" placeholder="Category">
+            <textarea id="manual-description" placeholder="Description"></textarea>
+            <input type="text" id="manual-weight" placeholder="Weight/Size">
+            <input type="url" id="manual-image" placeholder="Image URL">
+            <button type="submit" class="btn btn-primary">💾 Save Product</button>
+          </form>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading" style="display:none">
+          <div class="spinner"></div>
+          <p>Looking up product...</p>
+        </div>
+
+        <!-- Recent Scans -->
+        <div class="recent-scans">
+          <h3>Recent Scans</h3>
+          <div id="recent-scans-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Database Tab -->
+    <section id="tab-database" class="tab-content">
+      <div class="database-section">
+        <div class="db-controls">
+          <div class="input-group">
+            <input type="text" id="search-input" placeholder="Search products by name, brand, UPC...">
+            <button id="search-btn" class="btn btn-primary">🔍 Search</button>
+          </div>
+          <div class="db-actions">
+            <button id="export-btn" class="btn btn-secondary">📥 Export JSON</button>
+            <span id="product-count" class="count-badge">0 products</span>
+          </div>
+        </div>
+        <div id="products-grid" class="products-grid"></div>
+        <div id="pagination" class="pagination"></div>
+      </div>
+    </section>
+
+    <!-- Bulk Import Tab -->
+    <section id="tab-bulk" class="tab-content">
+      <div class="bulk-section">
+        <h2>Bulk UPC Lookup</h2>
+        <p>Enter multiple UPC codes (one per line) to look them all up and add to your database.</p>
+        <textarea id="bulk-upcs" rows="10" placeholder="049000042566&#10;012000161155&#10;038000138416&#10;..."></textarea>
+        <div class="bulk-controls">
+          <button id="bulk-lookup-btn" class="btn btn-primary">🚀 Lookup All</button>
+          <span id="bulk-status"></span>
+        </div>
+        <div id="bulk-results" class="bulk-results"></div>
+
+        <hr>
+        <h3>Import from JSON File</h3>
+        <p>Import a previously exported JSON file of products.</p>
+        <input type="file" id="import-file" accept=".json">
+        <button id="import-btn" class="btn btn-secondary">📤 Import File</button>
+        <div id="import-status"></div>
+      </div>
+    </section>
+
+    <!-- Stats Tab -->
+    <section id="tab-stats" class="tab-content">
+      <div class="stats-section">
+        <h2>Database Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="stat-products">0</div>
+            <div class="stat-label">Total Products</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-scans">0</div>
+            <div class="stat-label">Total Scans</div>
+          </div>
+        </div>
+        <div class="stats-details">
+          <div class="stat-panel">
+            <h3>Top Brands</h3>
+            <div id="top-brands"></div>
+          </div>
+          <div class="stat-panel">
+            <h3>Recently Added</h3>
+            <div id="recently-added"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
